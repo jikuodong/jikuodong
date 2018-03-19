@@ -12,16 +12,15 @@
      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
      http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 	
-   <context:annotation-config />
-	<context:component-scan base-package="cn.jikuodong.service" />
-
-	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">  
+   <context:annotation-config /><!-- 开启注解 -->
+	<context:component-scan base-package="cn.jikuodong.service" /><!-- 扫描service -->
+	<!--数据库连接初始配置  -->
+<!-- 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">  
 	  <property name="driverClassName">  
 	      <value>com.mysql.jdbc.Driver</value>  
 	  </property>  
 	  <property name="url">  
 	      <value>jdbc:mysql://localhost:3306/how2java?characterEncoding=UTF-8</value>  
-	
 	  </property>  
 	  <property name="username">  
 	      <value>root</value>  
@@ -29,8 +28,57 @@
 	  <property name="password">  
 	      <value>123456</value>  
 	  </property>  	
-	</bean>
-	
+	</bean> -->
+<!--========================阿里云连接池配置 =========================== -->	
+	<!--事务管理--> 
+	<bean name = "transactionManager" class ="org.springframework.jdbc.datasource.DataSourceTransactionManager" >     
+      	<!--注入dataSource--> 
+    	<property name = "dataSource" ref = "dataSource" ></property >  
+    </bean >
+    <!--注入dataSource-->
+    <bean id = "propertyConfigurer" class ="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" >    
+       <property name = "locations" >    
+           <list >    
+                 <value> /WEB-INF/classes/dbconfig.properties </value >    
+            </list >    
+        </property >    
+    </bean >  
+    
+	<!-- 阿里 druid 数据库连接池 -->  
+	<bean id = "dataSource" class = "com.alibaba.druid.pool.DruidDataSource" destroy-method = "close" >    
+	     <!-- 数据库基本信息配置 -->  
+	    <property name = "url" value = "${url}" />    
+	    <property name = "username" value = "${username}" />    
+	    <property name = "password" value = "${password}" />    
+	    <property name = "driverClassName" value = "${driverClassName}" />    
+	    <property name = "filters" value = "${filters}" />    
+	     <!-- 最大并发连接数 -->  
+	    <property name = "maxActive" value = "${maxActive}" />  
+	    <!-- 初始化连接数量 -->  
+	    <property name = "initialSize" value = "${initialSize}" />  
+	    <!-- 配置获取连接等待超时的时间 -->  
+	    <property name = "maxWait" value = "${maxWait}" />  
+	    <!-- 最小空闲连接数 -->  
+	    <property name = "minIdle" value = "${minIdle}" />    
+	    <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->  
+	    <property name = "timeBetweenEvictionRunsMillis" value ="${timeBetweenEvictionRunsMillis}" />  
+	    <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->  
+	    <property name = "minEvictableIdleTimeMillis" value ="${minEvictableIdleTimeMillis}" />    
+	    <property name = "validationQuery" value = "${validationQuery}" />    
+	    <property name = "testWhileIdle" value = "${testWhileIdle}" />    
+	    <property name = "testOnBorrow" value = "${testOnBorrow}" />    
+	    <property name = "testOnReturn" value = "${testOnReturn}" />    
+	    <property name = "maxOpenPreparedStatements" value ="${maxOpenPreparedStatements}" />  
+	    <!-- 打开 removeAbandoned 功能 -->  
+	    <property name = "removeAbandoned" value = "${removeAbandoned}" />  
+	    <!-- 1800 秒，也就是 30 分钟 -->  
+	    <property name = "removeAbandonedTimeout" value ="${removeAbandonedTimeout}" />  
+	    <!-- 关闭 abanded 连接时输出错误日志 -->     
+	    <property name = "logAbandoned" value = "${logAbandoned}" />  
+	</bean >  
+	<!--参考 http://blog.csdn.net/hj7jay/article/details/51686418  -->
+  <!--========================阿里云连接池配置 ===========================end -->	  
+
 	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="typeAliasesPackage" value="cn.jikuodong.pojo" />
 		<property name="dataSource" ref="dataSource"/>
