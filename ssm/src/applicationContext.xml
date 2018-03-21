@@ -12,7 +12,7 @@
      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
      http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 	
-   <context:annotation-config /><!-- 开启注解 -->
+    <context:annotation-config /><!-- 开启注解 -->
 	<context:component-scan base-package="cn.jikuodong.service" /><!-- 扫描service -->
 	<!--数据库连接初始配置  -->
 <!-- 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">  
@@ -30,21 +30,20 @@
 	  </property>  	
 	</bean> -->
 <!--========================阿里云连接池配置 =========================== -->	
-	<!--事务管理--> 
-	<bean name = "transactionManager" class ="org.springframework.jdbc.datasource.DataSourceTransactionManager" >     
-      	<!--注入dataSource--> 
-    	<property name = "dataSource" ref = "dataSource" ></property >  
-    </bean >
-    <!--注入dataSource-->
-    <bean id = "propertyConfigurer" class ="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" >    
+
+  <!--==================================注入properties文件====================================-->
+    	<!-- 传统方式引入 -->
+		<!--<bean id = "propertyConfigurer" class ="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" >    
        <property name = "locations" >    
            <list >    
                  <value> /WEB-INF/classes/dbconfig.properties </value >    
             </list >    
         </property >    
-    </bean >  
-    
-	<!-- 阿里 druid 数据库连接池 -->  
+    </bean >   -->
+     <!--简化方式  -->  
+    <context:property-placeholder location="classpath:dbconfig.properties"/>     
+ <!--==================================注入properties文件==================================== end-->  
+	<!--1.配置数据源     阿里 druid 数据库连接池 -->
 	<bean id = "dataSource" class = "com.alibaba.druid.pool.DruidDataSource" destroy-method = "close" >    
 	     <!-- 数据库基本信息配置 -->  
 	    <property name = "url" value = "${url}" />    
@@ -77,16 +76,26 @@
 	    <property name = "logAbandoned" value = "${logAbandoned}" />  
 	</bean >  
 	<!--参考 http://blog.csdn.net/hj7jay/article/details/51686418  -->
-  <!--========================阿里云连接池配置 ===========================end -->	  
-
+  	<!--========================阿里云连接池配置 ===========================end -->
+  		
+  	<!--2.配置mybatis的SqlSession的工厂: SqlSessionFactoryBean dataSource:引用数据源 -->
 	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="typeAliasesPackage" value="cn.jikuodong.pojo" />
 		<property name="dataSource" ref="dataSource"/>
 		<property name="mapperLocations" value="classpath:cn/jikuodong/mapper/*.xml"/>
 	</bean>
-
+	
+	<!-- 3. 自动扫描mybatis映射文件和接口的包 --> 
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
 		<property name="basePackage" value="cn.jikuodong.mapper"/>
 	</bean>
 	
+	<!--4.配置事务管理器 --> 
+	<bean name = "transactionManager" class ="org.springframework.jdbc.datasource.DataSourceTransactionManager" >     
+      	<!--注入dataSource--> 
+    	<property name = "dataSource" ref = "dataSource" ></property >  
+    </bean >
+    
+    <!--5.开启注解进行事务管理   transaction-manager：引用上面定义的事务管理器-->  
+    <tx:annotation-driven transaction-manager="transactionManager"/>  
 </beans>
